@@ -66,6 +66,7 @@ namespace Zadatak_1
                     Console.WriteLine("Shortest routes are generated successfully. (time: {0} ms)\n", s.ElapsedMilliseconds);
                     Console.ResetColor();
                     s.Stop();
+                    //AutoResetEvent lifts the barrier when called set method.
                     go.Set();
                 }
             }
@@ -87,10 +88,11 @@ namespace Zadatak_1
                     Console.WriteLine("Shortest routes are not generated successfully. (time: {0} ms)\n", s.ElapsedMilliseconds);
                     Console.ResetColor();
                     s.Stop();
+                    //AutoResetEvent lifts the barrier when called set method.
                     go.Set();
                 }
             }
-
+            //Barrier placed to simulate AutoResetEvent functionality.
             go.WaitOne();
             //Trucks loading process starts here.
             for (int j = 1; j <= 10; j++)
@@ -103,6 +105,7 @@ namespace Zadatak_1
                 //Both generated threads are initiated immediately when created.
                 t.Start();
                 t1.Start();
+                //CountdownEvent used to wait for the execution of two threads to finish in order for code to continue.
                 countdown = new CountdownEvent(2);
                 countdown.Wait();
                 j += 1;
@@ -123,7 +126,9 @@ namespace Zadatak_1
                 Thread t = new Thread(() => Destination(truck));
                 t.Start();
             }
+            //ManualResetEvent controlls two barriers in latter execution of threads.
             mre.Set();
+            mre.Reset();
             Thread.Sleep(3000);
             mre.Set();
 
@@ -146,6 +151,7 @@ namespace Zadatak_1
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(truck.Name + " has been loaded.");
             Console.ResetColor();
+            //CountdownEvent signals that thread is complete.
             countdown.Signal();
         }
         /// <summary>
@@ -154,15 +160,16 @@ namespace Zadatak_1
         /// <param name="truck"></param>
         public static void Destination(Truck truck)
         {
+            //ManualResetEvent first barrier, all threads stop here.
             mre.WaitOne();
             //Small thread sleep added for better console view.
-            if (truck.Name == "Truck_10") { Thread.Sleep(10); }
+            if (truck.Name == "Truck_10") { Thread.Sleep(15); }
             //Destination arrival time assigned to each truck randomly.
             int time = r.Next(500, 5000);
             Console.WriteLine(truck.Name + " has started {0} route, and will arrive at destination in: {1} ms.", truck.Route, time);
             //New line added on console to separate unrelated output.
             if (truck.Name == "Truck_10") { Console.WriteLine(); }
-
+            //After Reset() function called by ManualResetEvent, threads will pause again for 3 seconds before set() is called again.
             mre.WaitOne();
             //Condition separates trucks by arrival time, as specified in project description.
             if (time <= 3000)
